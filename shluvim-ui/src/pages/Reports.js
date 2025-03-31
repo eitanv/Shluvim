@@ -66,9 +66,27 @@ function Reports() {
     }
   }, [selectedInstitute, month]);
 
-  const logNewReport = () => {
-    // Logic to log new report
-  };
+const generateReport = () => {
+  if (selectedInstitute && month) {
+    fetch(`${process.env.REACT_APP_API_BASE_URL}/reports/${selectedInstitute}/${month}`, {
+      method: 'POST',
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Report generated:', data);
+        fetchReports(selectedInstitute, month); // Refresh the table
+      })
+      .catch(error => {
+        console.error('Error generating report:', error);
+        setError(error.message);
+      });
+  }
+};
 
   return (
   <div className="centered-frame">
@@ -84,7 +102,7 @@ function Reports() {
         ))}
       </select>
       <input type="month" onChange={e => setMonth(e.target.value)} value={month} />
-      <button onClick={logNewReport}>Log New Report</button>
+      <button onClick={generateReport}>Generate Report</button>
       <Table striped bordered hover>
         <thead>
           <tr>

@@ -80,6 +80,7 @@ public class ReportServiceImpl implements ReportService {
         try {
             MonthlyInstituteReport reportToSave = new MonthlyInstituteReport();
             reportToSave.setInstituteName(instituteName);
+            reportToSave.setInstituteId(instituteId);
             reportToSave.setReportMonth(month);
             reportToSave.setTotalCharge(totalCharge);
             reportToSave.setTotalHours(totalHours);

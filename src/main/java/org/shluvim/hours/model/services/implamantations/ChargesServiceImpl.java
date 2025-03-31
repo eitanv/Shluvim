@@ -26,7 +26,7 @@ public class ChargesServiceImpl implements ChargesService {
     public double getChargePerHour(Long instructorId, Long instituteId) {
         double instructorRate = instructorService.getInstructorRate(instructorId);
         double instituteRate = instituteService.getInstituteRate(instituteId);
-        return Math.max(instituteRate, instructorRate);
+        return instructorRate + instituteRate;
     }
 
     @Override

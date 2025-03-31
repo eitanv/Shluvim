@@ -22,7 +22,7 @@ public class InstructorReportMapper {
     public InstructorReport mapFromDto(InstructorHoursDTO hoursDTO) {
 
         Date date = Date.valueOf(hoursDTO.getDate());
-        String month = hoursDTO.getDate().split("-")[1];
+        String month = date.toLocalDate().toString().substring(0, 7);
         Time startTime = Time.valueOf(hoursDTO.getStartTime());
         Time endTime = Time.valueOf(hoursDTO.getEndTime());
         String instituteName = instituteRepository.getReferenceById(hoursDTO.getInstituteId()).getInstituteName();
