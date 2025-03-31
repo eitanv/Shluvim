@@ -1,0 +1,16 @@
+/* Add this CSS to your stylesheet */
+.centered-frame {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Align items to the start (top) */
+  background-color: #f0f0f0; /* Optional: to differentiate the background */
+  padding: 10px;
+}
+
+.frame-content {
+  border: 2px solid #000;
+  padding: 60px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  color: #000; /* Set the text color to white for better contrast */
+  max-height: 100vh; /* Optional: limit the height of the content */
+}
