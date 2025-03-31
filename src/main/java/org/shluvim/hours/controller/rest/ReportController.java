@@ -1,5 +1,6 @@
 package org.shluvim.hours.controller.rest;
 
+import org.shluvim.hours.controller.dto.MonthlyInstituteReportDTO;
 import org.shluvim.hours.controller.dto.MonthlyReportDTO;
 import org.shluvim.hours.model.MonthlyInstituteReport;
 import org.shluvim.hours.model.services.ReportService;
@@ -23,10 +24,22 @@ public class ReportController {
         return new ResponseEntity<>(report, HttpStatus.OK);
     }
 
+    @GetMapping("/all/{month}")
+    ResponseEntity<List<MonthlyInstituteReport>> getMonthlyAllInstitutesReport(@PathVariable String month) {
+        List<MonthlyInstituteReport> report = reportService.getMonthlyAllInstitutesReport(month);
+        return new ResponseEntity<>(report, HttpStatus.OK);
+    }
+
     @PostMapping("/{instituteId}/{month}")
     ResponseEntity<MonthlyReportDTO> generateMonthlyInstituteReport(@PathVariable Long instituteId, @PathVariable String month) {
         MonthlyReportDTO report = reportService.generateMonthlyInstituteReport(instituteId, month);
 
+        return new ResponseEntity<>(report, HttpStatus.OK);
+    }
+
+    @GetMapping("/{instituteId}/{month}/details")
+    ResponseEntity<List<MonthlyInstituteReportDTO>> getMonthlyReportDetails(@PathVariable Long instituteId, @PathVariable String month) {
+        List<MonthlyInstituteReportDTO> report = reportService.getMonthlyReportDetails(instituteId, month);
         return new ResponseEntity<>(report, HttpStatus.OK);
     }
 }

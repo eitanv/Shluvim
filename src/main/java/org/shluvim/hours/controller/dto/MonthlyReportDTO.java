@@ -7,7 +7,6 @@ import java.util.List;
 @Data
 public class MonthlyReportDTO {
 
-    String month;
     String instituteName;
     Double totalHours;
     Double totalCharge;

@@ -9,4 +9,5 @@ public interface ReportRepository extends JpaRepository<MonthlyInstituteReport, 
 
 
     List<MonthlyInstituteReport> findByInstituteIdAndReportMonth(Long instituteId, String month);
+    List<MonthlyInstituteReport> findByReportMonth(String month);
 }
