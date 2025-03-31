@@ -38,36 +38,34 @@ function Reports() {
       });
   }, []);
 
-const fetchReports = (instituteId, month) => {
-  if (month) {
-    const url = instituteId ?
-      `${process.env.REACT_APP_API_BASE_URL}/reports/${instituteId}/${month}` :
-      `${process.env.REACT_APP_API_BASE_URL}/reports/all/${month}`;
-    fetch(url)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then(data => {
-        if (Array.isArray(data)) {
-          setReports(data);
-        } else {
-          setReports([]);
-        }
-      })
-      .catch(error => {
-        console.error('Error fetching reports:', error);
-        setError(error.message);
-      });
-  }
-};
+  const fetchReports = (instituteId, month) => {
+    if (month) {
+      const url = instituteId
+        ? `${process.env.REACT_APP_API_BASE_URL}/reports/${instituteId}/${month}`
+        : `${process.env.REACT_APP_API_BASE_URL}/reports/all/${month}`;
+      fetch(url)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (Array.isArray(data)) {
+            setReports(data);
+          } else {
+            setReports([]);
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching reports:', error);
+          setError(error.message);
+        });
+    }
+  };
 
   useEffect(() => {
-    if (selectedInstitute && month) {
-      fetchReports(selectedInstitute, month);
-    }
+    fetchReports(selectedInstitute, month);
   }, [selectedInstitute, month]);
 
   const generateReport = () => {
@@ -92,29 +90,29 @@ const fetchReports = (instituteId, month) => {
     }
   };
 
-    const handleShowDetails = (report, month) => {
-      if (!month) {
-        console.error('Month is undefined');
-        setError('Month is undefined');
-        return;
-      }
+  const handleShowDetails = (report, month) => {
+    if (!month) {
+      console.error('Month is undefined');
+      setError('Month is undefined');
+      return;
+    }
 
-      fetch(`${process.env.REACT_APP_API_BASE_URL}/reports/${report.instituteId}/${month}/details`)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json();
-        })
-        .then(data => {
-          setSelectedReport({ ...report, details: data });
-          setShowDetails(true);
-        })
-        .catch(error => {
-          console.error('Error fetching report details:', error);
-          setError(error.message);
-        });
-    };
+    fetch(`${process.env.REACT_APP_API_BASE_URL}/reports/${report.instituteId}/${month}/details`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        setSelectedReport({ ...report, details: data });
+        setShowDetails(true);
+      })
+      .catch(error => {
+        console.error('Error fetching report details:', error);
+        setError(error.message);
+      });
+  };
 
   const handleCloseDetails = () => {
     setShowDetails(false);
@@ -129,7 +127,6 @@ const fetchReports = (instituteId, month) => {
           {error && <p style={{ color: 'red' }}>{error}</p>}
           <select onChange={e => setSelectedInstitute(e.target.value)} value={selectedInstitute}>
             <option value="">All</option>
-
             {institutes.map(institute => (
               <option key={institute.instituteId} value={institute.instituteId}>
                 {institute.instituteName}
@@ -154,7 +151,7 @@ const fetchReports = (instituteId, month) => {
                   <td>{report.totalHours}</td>
                   <td>{report.totalCharge}</td>
                   <td>
-                      <Button onClick={() => handleShowDetails(report, month)}>Details</Button>
+                    <Button onClick={() => handleShowDetails(report, month)}>Details</Button>
                   </td>
                 </tr>
               ))}
