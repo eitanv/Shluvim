@@ -110,4 +110,27 @@ public class InstructorServiceImpl implements InstructorService {
         instructorRepository.save(instructor);
     }
 
+    public boolean updateInstructor(Long id, InstructorRequestDTO instructorDTO) {
+        if (instructorRepository.existsById(id)) { //TODO fix condition
+            Instructor instructor = instructorRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Instructor not found with id: " + id));
+            instructor.setInstructorName(instructorDTO.getInstructorName());
+            instructor.setRateCode(instructorDTO.getRateCode());
+            // Update other fields as necessary
+            instructorRepository.save(instructor);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean deleteInstructor(Long id) {
+        if (!instructorRepository.existsById(id)) {
+            return false;
+        }
+        instructorRepository.deleteById(id);
+        return true;
+    }
+
 }

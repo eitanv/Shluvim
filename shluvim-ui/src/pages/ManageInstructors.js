@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Table, Button, Form, Modal } from 'react-bootstrap';
 import '../styles.css'; // Make sure to import the CSS file
 
@@ -16,30 +16,42 @@ function ManageInstructors() {
     endTime: ''
   });
   const [showReportModal, setShowReportModal] = useState(false);
+  const [editableInstructor, setEditableInstructor] = useState(null);
 
-  useEffect(() => {
-    fetchInstructors();
-    fetchRates();
-    fetchInstitutes();
-  }, []);
+  const fetchInstructors = useCallback(() => {
+    if (rates.length > 0) {
+      fetch(`${process.env.REACT_APP_API_BASE_URL}/instructors/`)
+        .then(response => response.json())
+        .then(data => {
+          const instructorsWithRates = data.map(instructor => {
+            const rate = rates.find(rate => rate.rateCode === instructor.rateCode);
+            return { ...instructor, rate: rate ? rate.rate : '' };
+          });
+          setInstructors(instructorsWithRates);
+        });
+    }
+  }, [rates]);
 
-  const fetchInstructors = () => {
-    fetch(`${process.env.REACT_APP_API_BASE_URL}/instructors/`)
-      .then(response => response.json())
-      .then(data => setInstructors(data));
-  };
-
-  const fetchRates = () => {
+  const fetchRates = useCallback(() => {
     fetch(`${process.env.REACT_APP_API_BASE_URL}/rates/`)
       .then(response => response.json())
       .then(data => setRates(data));
-  };
+  }, []);
 
-  const fetchInstitutes = () => {
+  const fetchInstitutes = useCallback(() => {
     fetch(`${process.env.REACT_APP_API_BASE_URL}/institutes/`)
       .then(response => response.json())
       .then(data => setInstitutes(data));
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchRates();
+    fetchInstitutes();
+  }, [fetchRates, fetchInstitutes]);
+
+  useEffect(() => {
+    fetchInstructors();
+  }, [fetchInstructors]);
 
   const handleShow = () => setShowModal(true);
   const handleClose = () => setShowModal(false);
@@ -86,53 +98,96 @@ function ManageInstructors() {
       .catch(error => console.error('There was a problem with the fetch operation:', error));
   };
 
-function logNewReport() {
-  console.log('Sending report...');
-  fetch(`${process.env.REACT_APP_API_BASE_URL}/instructors/report`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(newReport)
-  })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.text(); // Read the response as text
+  const logNewReport = () => {
+    console.log('Sending report...');
+    fetch(`${process.env.REACT_APP_API_BASE_URL}/instructors/report`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(newReport)
     })
-    .then(text => {
-      if (text) {
-        const data = JSON.parse(text); // Parse the text to JSON if not empty
-        console.log('Report logged:', data);
-      }
-      handleReportClose(); // Close the modal after logging the report
-    })
-    .catch(error => {
-      console.error('Error logging report:', error);
-    });
-}
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.text(); // Read the response as text
+      })
+      .then(text => {
+        if (text) {
+          const data = JSON.parse(text); // Parse the text to JSON if not empty
+          console.log('Report logged:', data);
+        }
+        handleReportClose(); // Close the modal after logging the report
+      })
+      .catch(error => {
+        console.error('Error logging report:', error);
+      });
+  };
 
   const deleteInstructor = (id) => {
-    // Logic to delete instructor
+    fetch(`${process.env.REACT_APP_API_BASE_URL}/instructors/delete/${id}`, {
+      method: 'DELETE',
+    })
+      .then(response => {
+        if (response.ok) {
+          fetchInstructors();
+        } else {
+          throw new Error('Network response was not ok');
+        }
+      })
+      .catch(error => console.error('There was a problem with the fetch operation:', error));
   };
 
-  const updateInstructor = (id) => {
-    // Logic to update instructor
-  };
+    const updateInstructor = (id) => {
+      const instructorToUpdate = instructors.find(instructor => instructor.instructorId === id);
+      fetch(`${process.env.REACT_APP_API_BASE_URL}/instructors/update/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(instructorToUpdate),
+      })
+        .then(response => {
+          if (response.ok) {
+            fetchInstructors();
+            setEditableInstructor(null);
+          } else {
+            throw new Error('Network response was not ok');
+          }
+        })
+        .catch(error => console.error('There was a problem with the fetch operation:', error));
+    };
+
+    const handleEditChange = (e, id) => {
+      const { name, value } = e.target;
+      setInstructors(prevState =>
+        prevState.map(instructor =>
+          instructor.instructorId === id
+            ? {
+                ...instructor,
+                user: name === 'identityNumber' ? { ...instructor.user, identityNumber: value } : instructor.user,
+                [name]: name !== 'identityNumber' ? value : instructor[name],
+              }
+            : instructor
+        )
+      );
+    };
 
   return (
     <div className="centered-frame">
       <div className="frame-content">
         <div>
-          <h2>Manage Instructors</h2>
+          <h2>ניהול מדריכים</h2>
           <Button onClick={handleShow}>Add Instructor</Button>
           <Table striped bordered hover>
             <thead>
               <tr>
                 <th>ID</th>
                 <th>Name</th>
+                <th>Rate Code</th>
                 <th>Rate</th>
+                <th>Identity No.</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -140,11 +195,57 @@ function logNewReport() {
               {instructors.map(instructor => (
                 <tr key={instructor.instructorId}>
                   <td>{instructor.instructorId}</td>
-                  <td>{instructor.instructorName}</td>
+                  <td>
+                    {editableInstructor === instructor.instructorId ? (
+                      <Form.Control
+                        type="text"
+                        name="instructorName"
+                        value={instructor.instructorName}
+                        onChange={(e) => handleEditChange(e, instructor.instructorId)}
+                      />
+                    ) : (
+                      instructor.instructorName
+                    )}
+                  </td>
+                  <td>
+                    {editableInstructor === instructor.instructorId ? (
+                      <Form.Control
+                        as="select"
+                        name="rateCode"
+                        value={instructor.rateCode}
+                        onChange={(e) => handleEditChange(e, instructor.instructorId)}
+                      >
+                        <option value="">Select Rate Code</option>
+                        {rates.map(rate => (
+                          <option key={rate.rateCode} value={rate.rateCode}>
+                            {rate.rateCode}
+                          </option>
+                        ))}
+                      </Form.Control>
+                    ) : (
+                      instructor.rateCode
+                    )}
+                  </td>
                   <td>{instructor.rate}</td>
                   <td>
-                    <Button onClick={() => updateInstructor(instructor.id)}>Update</Button>
-                    <Button onClick={() => deleteInstructor(instructor.id)}>Delete</Button>
+                    {editableInstructor === instructor.instructorId ? (
+                      <Form.Control
+                        type="text"
+                        name="identityNumber"
+                        value={instructor.user.identityNumber}
+                        onChange={(e) => handleEditChange(e, instructor.instructorId)}
+                      />
+                    ) : (
+                      instructor.user.identityNumber
+                    )}
+                  </td>
+                  <td>
+                    {editableInstructor === instructor.instructorId ? (
+                      <Button onMouseUp={() => updateInstructor(instructor.instructorId)}>Update</Button>
+                    ) : (
+                      <Button onMouseDown={() => setEditableInstructor(instructor.instructorId)}>Update</Button>
+                    )}
+                    <Button onClick={() => deleteInstructor(instructor.instructorId)}>Delete</Button>
                     <Button onClick={() => handleReportShow(instructor.instructorId)}>Log Hours</Button>
                   </td>
                 </tr>

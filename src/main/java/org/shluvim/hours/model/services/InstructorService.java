@@ -22,4 +22,8 @@ public interface InstructorService {
     List<Instructor> getAllInstructors();
 
     void addInstructor(InstructorRequestDTO instructorRequest);
+
+    boolean updateInstructor(Long id, InstructorRequestDTO instructorDTO);
+
+    boolean deleteInstructor(Long id);
 }

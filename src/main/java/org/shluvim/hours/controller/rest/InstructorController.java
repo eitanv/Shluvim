@@ -45,8 +45,24 @@ public class InstructorController {
         return ResponseEntity.ok().build();
     }
 
-    //updateInstructor method
+    @PutMapping("/update/{id}")
+    ResponseEntity<Void> updateInstructor(@PathVariable Long id, @RequestBody InstructorRequestDTO instructor) {
+        boolean updated = instructorService.updateInstructor(id, instructor);
+        if (updated) {
+            return ResponseEntity.ok().build();
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
 
-    //deleteInstructor method
+    @DeleteMapping("/delete/{id}")
+    ResponseEntity<Void> deleteInstructor(@PathVariable Long id) {
+        boolean deleted = instructorService.deleteInstructor(id);
+        if (deleted) {
+            return ResponseEntity.ok().build();
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
 
 }

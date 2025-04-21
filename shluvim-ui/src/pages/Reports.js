@@ -123,7 +123,7 @@ function Reports() {
     <div className="centered-frame">
       <div className="frame-content">
         <div>
-          <h2>Reports</h2>
+          <h2>דוחות</h2>
           {error && <p style={{ color: 'red' }}>{error}</p>}
           <select onChange={e => setSelectedInstitute(e.target.value)} value={selectedInstitute}>
             <option value="">All</option>

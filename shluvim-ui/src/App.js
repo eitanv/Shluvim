@@ -12,15 +12,15 @@ function App() {
     <Router>
       <div className="App">
         <header className="App-header">
-          <h1>Shluvim</h1>
+          <h1>שלובים</h1>
         </header>
         <hr />
       <div className="centered-frame-main">
       <div className="frame-content-main">
         <nav>
-          <Link to="/instructors"><button>Manage Instructors</button></Link>
-          <Link to="/institutes"><button>Manage Institutes</button></Link>
-          <Link to="/reports"><button>Reports</button></Link>
+          <Link to="/instructors"><button>ניהול מדריכים</button></Link>
+          <Link to="/institutes"><button>ניהול מוסדות</button></Link>
+          <Link to="/reports"><button>דוחות</button></Link>
         </nav>
         <Routes>
           <Route path="/instructors" element={<ManageInstructors />} />

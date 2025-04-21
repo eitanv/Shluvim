@@ -27,8 +27,8 @@ function ManageInstitutes() {
   <div className="centered-frame">
   <div className="frame-content">
     <div>
-      <h2>Manage Institutes</h2>
-      <button onClick={addInstitute}>Add Institute</button>
+      <h2>ניהול מוסדות</h2>
+      <button onClick={addInstitute}>הוספת מוסד</button>
       <table>
         <thead>
           <tr>
@@ -45,8 +45,8 @@ function ManageInstitutes() {
               <td>{institute.instituteType}</td>
               <td>{institute.rate}</td>
               <td>
-                <button onClick={() => updateInstitute(institute.instituteId)}>Update</button>
-                <button onClick={() => deleteInstitute(institute.instituteId)}>Delete</button>
+                <button onClick={() => updateInstitute(institute.instituteId)}>שינוי</button>
+                <button onClick={() => deleteInstitute(institute.instituteId)}>מחיקה</button>
               </td>
             </tr>
           ))}
