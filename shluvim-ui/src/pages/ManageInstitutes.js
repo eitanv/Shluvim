@@ -5,6 +5,7 @@ import '../styles.css';
 function ManageInstitutes() {
   const [institutes, setInstitutes] = useState([]);
   const [rates, setRates] = useState([]);
+  const [instituteTypes, setInstituteTypes] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [newInstitute, setNewInstitute] = useState({
     instituteName: '',
@@ -29,6 +30,7 @@ function ManageInstitutes() {
   }, [rates]);
 
   useEffect(() => {
+
     fetch(`${process.env.REACT_APP_API_BASE_URL}/rates/`)
       .then((response) => response.json())
       .then((data) => {
@@ -42,6 +44,11 @@ function ManageInstitutes() {
     const rate = rates.find((rate) => rate.rateCode === rateCode);
     return rate ? rate.rate : 'N/A';
   };
+
+     fetch(`${process.env.REACT_APP_API_BASE_URL}/institute-types/`)
+       .then((response) => response.json())
+       .then((data) => setInstituteTypes(data))
+       .catch((error) => console.error('Error fetching institute types:', error));
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -146,11 +153,17 @@ function ManageInstitutes() {
             <Form.Group controlId="formInstituteType">
               <Form.Label>סוג מוסד</Form.Label>
               <Form.Control
-                type="text"
+                as="select"
                 name="instituteType"
                 value={newInstitute.instituteType}
-                onChange={handleChange}
-              />
+                onChange={handleChange}>
+                <option value="">Select Institute Type</option>
+                {instituteTypes.map((type) => (
+                  <option key={type.id} value={type.type}>
+                    {type.type}
+                  </option>
+                ))}
+              </Form.Control>
             </Form.Group>
             <Form.Group controlId="formInstituteRateCode">
               <Form.Label>Rate Code</Form.Label>
