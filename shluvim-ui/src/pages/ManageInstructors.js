@@ -1,30 +1,37 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Table, Button, Form, Modal } from 'react-bootstrap';
-import '../styles.css'; // Make sure to import the CSS file
+import '../styles.css';
 
 function ManageInstructors() {
+  // State declarations
   const [instructors, setInstructors] = useState([]);
   const [rates, setRates] = useState([]);
   const [institutes, setInstitutes] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [newInstructor, setNewInstructor] = useState({ instructorName: '', rate: '', identityNumber: '', rateCode: '' });
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [editableInstructor, setEditableInstructor] = useState(null);
+  const [newInstructor, setNewInstructor] = useState({
+    instructorName: '',
+    rate: '',
+    identityNumber: '',
+    rateCode: '',
+  });
   const [newReport, setNewReport] = useState({
     instructorId: '',
     instituteId: '',
     date: '',
     startTime: '',
-    endTime: ''
+    endTime: '',
   });
-  const [showReportModal, setShowReportModal] = useState(false);
-  const [editableInstructor, setEditableInstructor] = useState(null);
 
+  // Fetch functions
   const fetchInstructors = useCallback(() => {
     if (rates.length > 0) {
       fetch(`${process.env.REACT_APP_API_BASE_URL}/instructors/`)
-        .then(response => response.json())
-        .then(data => {
-          const instructorsWithRates = data.map(instructor => {
-            const rate = rates.find(rate => rate.rateCode === instructor.rateCode);
+        .then((response) => response.json())
+        .then((data) => {
+          const instructorsWithRates = data.map((instructor) => {
+            const rate = rates.find((rate) => rate.rateCode === instructor.rateCode);
             return { ...instructor, rate: rate ? rate.rate : '' };
           });
           setInstructors(instructorsWithRates);
@@ -34,16 +41,17 @@ function ManageInstructors() {
 
   const fetchRates = useCallback(() => {
     fetch(`${process.env.REACT_APP_API_BASE_URL}/rates/`)
-      .then(response => response.json())
-      .then(data => setRates(data));
+      .then((response) => response.json())
+      .then((data) => setRates(data));
   }, []);
 
   const fetchInstitutes = useCallback(() => {
     fetch(`${process.env.REACT_APP_API_BASE_URL}/institutes/`)
-      .then(response => response.json())
-      .then(data => setInstitutes(data));
+      .then((response) => response.json())
+      .then((data) => setInstitutes(data));
   }, []);
 
+  // Effects
   useEffect(() => {
     fetchRates();
     fetchInstitutes();
@@ -53,127 +61,117 @@ function ManageInstructors() {
     fetchInstructors();
   }, [fetchInstructors]);
 
+  // Handlers
   const handleShow = () => setShowModal(true);
   const handleClose = () => setShowModal(false);
 
   const handleReportShow = (instructorId) => {
-    setNewReport(prevState => ({ ...prevState, instructorId }));
+    setNewReport((prevState) => ({ ...prevState, instructorId }));
     setShowReportModal(true);
   };
+
   const handleReportClose = () => setShowReportModal(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewInstructor(prevState => ({ ...prevState, [name]: value }));
+    setNewInstructor((prevState) => ({ ...prevState, [name]: value }));
 
     if (name === 'rateCode') {
-      const selectedRate = rates.find(rate => rate.rateCode === value);
+      const selectedRate = rates.find((rate) => rate.rateCode === value);
       if (selectedRate) {
-        setNewInstructor(prevState => ({ ...prevState, rate: selectedRate.rate }));
+        setNewInstructor((prevState) => ({ ...prevState, rate: selectedRate.rate }));
       }
     }
   };
 
   const handleReportChange = (e) => {
     const { name, value } = e.target;
-    setNewReport(prevState => ({ ...prevState, [name]: value }));
+    setNewReport((prevState) => ({ ...prevState, [name]: value }));
   };
 
+  const handleEditChange = (e, id) => {
+    const { name, value } = e.target;
+
+    setInstructors((prevState) =>
+      prevState.map((instructor) => {
+        if (instructor.instructorId === id) {
+          const updatedInstructor = { ...instructor, [name]: value };
+          if (name === 'rateCode') {
+            const selectedRate = rates.find((rate) => rate.rateCode === value);
+            updatedInstructor.rate = selectedRate ? selectedRate.rate : '';
+          }
+          return updatedInstructor;
+        }
+        return instructor;
+      })
+    );
+  };
+
+  // CRUD operations
   const addInstructor = () => {
     fetch(`${process.env.REACT_APP_API_BASE_URL}/instructors/addInstructor`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newInstructor),
     })
-      .then(response => {
+      .then((response) => {
         if (response.ok) {
           fetchInstructors();
           handleClose();
         } else {
-          throw new Error('Network response was not ok');
+          throw new Error('Failed to add instructor');
         }
       })
-      .catch(error => console.error('There was a problem with the fetch operation:', error));
+      .catch((error) => console.error('Error adding instructor:', error));
   };
 
   const logNewReport = () => {
-    console.log('Sending report...');
     fetch(`${process.env.REACT_APP_API_BASE_URL}/instructors/report`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(newReport)
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newReport),
     })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
+      .then((response) => {
+        if (response.ok) {
+          handleReportClose();
+        } else {
+          throw new Error('Failed to log report');
         }
-        return response.text(); // Read the response as text
       })
-      .then(text => {
-        if (text) {
-          const data = JSON.parse(text); // Parse the text to JSON if not empty
-          console.log('Report logged:', data);
-        }
-        handleReportClose(); // Close the modal after logging the report
-      })
-      .catch(error => {
-        console.error('Error logging report:', error);
-      });
+      .catch((error) => console.error('Error logging report:', error));
   };
 
   const deleteInstructor = (id) => {
-    fetch(`${process.env.REACT_APP_API_BASE_URL}/instructors/${id}`, {
-      method: 'DELETE',
-    })
-      .then(response => {
+    fetch(`${process.env.REACT_APP_API_BASE_URL}/instructors/${id}`, { method: 'DELETE' })
+      .then((response) => {
         if (response.ok) {
           fetchInstructors();
         } else {
-          throw new Error('Network response was not ok');
+          throw new Error('Failed to delete instructor');
         }
       })
-      .catch(error => console.error('There was a problem with the fetch operation:', error));
+      .catch((error) => console.error('Error deleting instructor:', error));
   };
 
-    const updateInstructor = (id) => {
-      const instructorToUpdate = instructors.find(instructor => instructor.instructorId === id);
-      fetch(`${process.env.REACT_APP_API_BASE_URL}/instructors/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(instructorToUpdate),
+  const updateInstructor = (id) => {
+    const instructorToUpdate = instructors.find((instructor) => instructor.instructorId === id);
+    fetch(`${process.env.REACT_APP_API_BASE_URL}/instructors/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(instructorToUpdate),
+    })
+      .then((response) => {
+        if (response.ok) {
+          fetchInstructors();
+          setEditableInstructor(null);
+        } else {
+          throw new Error('Failed to update instructor');
+        }
       })
-        .then(response => {
-          if (response.ok) {
-            fetchInstructors();
-            setEditableInstructor(null);
-          } else {
-            throw new Error('Network response was not ok');
-          }
-        })
-        .catch(error => console.error('There was a problem with the fetch operation:', error));
-    };
+      .catch((error) => console.error('Error updating instructor:', error));
+  };
 
-    const handleEditChange = (e, id) => {
-      const { name, value } = e.target;
-      setInstructors(prevState =>
-        prevState.map(instructor =>
-          instructor.instructorId === id
-            ? {
-                ...instructor,
-                user: name === 'identityNumber' ? { ...instructor.user, identityNumber: value } : instructor.user,
-                [name]: name !== 'identityNumber' ? value : instructor[name],
-              }
-            : instructor
-        )
-      );
-    };
-
+  // Render
   return (
     <div className="centered-frame">
       <div className="frame-content">
@@ -184,9 +182,9 @@ function ManageInstructors() {
             <thead>
               <tr>
                 <th>Name</th>
+                <th>Identity No.</th>
                 <th>Rate Code</th>
                 <th>Rate</th>
-                <th>Identity No.</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -304,10 +302,10 @@ function ManageInstructors() {
             </Modal.Body>
             <Modal.Footer>
               <Button variant="secondary" onClick={handleClose}>
-                Close
+                Cancel
               </Button>
               <Button variant="primary" onClick={addInstructor}>
-                Save Changes
+                Add
               </Button>
             </Modal.Footer>
           </Modal>
