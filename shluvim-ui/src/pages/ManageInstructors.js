@@ -237,7 +237,7 @@ function ManageInstructors() {
                   <td>{instructor.rate}</td>
                   <td>
                     {editableInstructor === instructor.instructorId ? (
-                      <Button variant="secondary" onMouseUp={() => updateInstructor(instructor.instructorId)}>Update</Button>
+                      <Button variant="secondary" onMouseUp={() => updateInstructor(instructor.instructorId)}>Save</Button>
                     ) : (
                       <Button variant="secondary" onMouseDown={() => setEditableInstructor(instructor.instructorId)}>Update</Button>
                     )} {' '}

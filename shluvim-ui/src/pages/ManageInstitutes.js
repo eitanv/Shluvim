@@ -14,6 +14,8 @@ function ManageInstitutes() {
     rateCode: '',
   });
   const [selectedRate, setSelectedRate] = useState(null);
+  const [editableInstitute, setEditableInstitute] = useState(null);
+
 
   const fetchInstitutes = useCallback(() => {
     if (rates.length > 0) {
@@ -29,26 +31,26 @@ function ManageInstitutes() {
     }
   }, [rates]);
 
-  useEffect(() => {
+useEffect(() => {
+  fetch(`${process.env.REACT_APP_API_BASE_URL}/rates/`)
+    .then((response) => response.json())
+    .then((data) => setRates(data))
+    .catch((error) => console.error('Error fetching rates:', error));
+}, []); // Empty dependency array ensures this runs only once
 
-    fetch(`${process.env.REACT_APP_API_BASE_URL}/rates/`)
+useEffect(() => {
+  if (rates.length > 0) {
+    fetch(`${process.env.REACT_APP_API_BASE_URL}/institutes/`)
       .then((response) => response.json())
-      .then((data) => {
-        setRates(data);
-        fetchInstitutes();
-      })
-      .catch((error) => console.error('Error fetching rates:', error));
-  }, [fetchInstitutes]);
+      .then((data) => setInstitutes(data))
+      .catch((error) => console.error('Error fetching institutes:', error));
+  }
+      fetch(`${process.env.REACT_APP_API_BASE_URL}/institute-types/`)
+        .then((response) => response.json())
+        .then((data) => setInstituteTypes(data))
+        .catch((error) => console.error('Error fetching institute types:', error));
 
-  const getRateByCode = (rateCode) => {
-    const rate = rates.find((rate) => rate.rateCode === rateCode);
-    return rate ? rate.rate : 'N/A';
-  };
-
-     fetch(`${process.env.REACT_APP_API_BASE_URL}/institute-types/`)
-       .then((response) => response.json())
-       .then((data) => setInstituteTypes(data))
-       .catch((error) => console.error('Error fetching institute types:', error));
+}, [rates]); // Runs only when `rates` changes
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -59,39 +61,75 @@ function ManageInstitutes() {
     }
   };
 
+      const handleEditChange = (e, id) => {
+        const { name, value } = e.target;
+        setInstitutes((prevState) =>
+          prevState.map((institute) => {
+            if (institute.instituteId === id) {
+              const updateInstitute = { ...institute, [name]: value };
+              if (name === 'rateCode') {
+                const selectedRate = rates.find((rate) => rate.rateCode === value);
+                updateInstitute.rate = selectedRate ? selectedRate.rate : '';
+              }
+              return updateInstitute;
+            }
+            return institute;
+          })
+        );
+      };
+
   const handleShow = () => setShowModal(true);
   const handleClose = () => {
     setShowModal(false);
     setSelectedRate(null);
   };
 
-  const addInstitute = () => {
-    fetch(`${process.env.REACT_APP_API_BASE_URL}/institutes/addInstitute`, {
-      method: 'POST',
+    const addInstitute = () => {
+      fetch(`${process.env.REACT_APP_API_BASE_URL}/institutes/addInstitute`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newInstitute),
+      })
+        .then((response) => {
+          if (response.ok) {
+            fetchInstitutes();
+            handleClose();
+          } else {
+            throw new Error('Failed to add institute');
+          }
+        })
+        .catch((error) => console.error('Error adding institute:', error));
+    };
+
+
+    const deleteInstitute = (id) => {
+      fetch(`${process.env.REACT_APP_API_BASE_URL}/institutes/${id}`, { method: 'DELETE' })
+        .then((response) => {
+          if (response.ok) {
+            fetchInstitutes();
+          } else {
+            throw new Error('Network response was not ok');
+          }
+        })
+        .catch((error) => console.error('There was a problem with the fetch operation:', error));
+    };
+
+  const updateInstitute = (id) => {
+    const instituteToUpdate = institutes.find((institute) => institute.instituteId === id);
+    fetch(`${process.env.REACT_APP_API_BASE_URL}/institutes/${id}`, {
+      method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newInstitute),
+      body: JSON.stringify(instituteToUpdate),
     })
       .then((response) => {
         if (response.ok) {
           fetchInstitutes();
-          handleClose();
+          setEditableInstitute(null);
         } else {
-          throw new Error('Failed to add institute');
+          throw new Error('Failed to update institute');
         }
       })
-      .catch((error) => console.error('Error adding institute:', error));
-  };
-
-  const deleteInstitute = (id) => {
-    fetch(`${process.env.REACT_APP_API_BASE_URL}/institutes/${id}`, { method: 'DELETE' })
-      .then((response) => {
-        if (response.ok) {
-          fetchInstitutes();
-        } else {
-          throw new Error('Network response was not ok');
-        }
-      })
-      .catch((error) => console.error('There was a problem with the fetch operation:', error));
+      .catch((error) => console.error('Error updating institute:', error));
   };
 
   return (
@@ -102,39 +140,88 @@ function ManageInstitutes() {
           <Button variant="dark" onClick={handleShow}>
             הוספת מוסד
           </Button>
-          <Table striped bordered hover>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Rate Code</th>
-                <th>Rate</th>
-                <th>Actions</th>
+        <Table striped bordered hover>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Rate Code</th>
+              <th>Rate</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {institutes.map((institute) => (
+              <tr key={institute.instituteId}>
+                <td>
+                  {editableInstitute === institute.instituteId ? (
+                    <Form.Control
+                      type="text"
+                      name="instituteName"
+                      value={editableInstitute === institute.instituteId ? institute.instituteName : ''}
+                      onChange={(e) => handleEditChange(e, institute.instituteId)}
+                    />
+                  ) : (
+                    institute.instituteName
+                  )}
+                </td>
+                <td>
+                  {editableInstitute === institute.instituteId ? (
+                    <Form.Control
+                      as="select"
+                      name="instituteType"
+                      value={institute.instituteType}
+                      onChange={(e) => handleEditChange(e, institute.instituteId)}
+                    >
+                      <option value="">Select Institute Type</option>
+                      {instituteTypes.map((type) => (
+                        <option key={type.id} value={type.type}>
+                          {type.type}
+                        </option>
+                      ))}
+                    </Form.Control>
+                  ) : (
+                    institute.instituteType
+                  )}
+                </td>
+                <td>
+                  {editableInstitute === institute.instituteId ? (
+                    <Form.Control
+                      as="select"
+                      name="rateCode"
+                      value={institute.rateCode}
+                      onChange={(e) => handleEditChange(e, institute.instituteId)}
+                    >
+                      <option value="">Select Rate Code</option>
+                      {rates.map((rate) => (
+                        <option key={rate.rateCode} value={rate.rateCode}>
+                          {rate.rateCode}
+                        </option>
+                      ))}
+                    </Form.Control>
+                  ) : (
+                    institute.rateCode
+                  )}
+                </td>
+                <td>{institute.rate}</td>
+                <td>
+                  {editableInstitute === institute.instituteId ? (
+                        <Button variant="secondary" onMouseUp={() => updateInstitute(institute.instituteId)}>שמור</Button>
+                      )
+                      : (
+                        <Button variant="secondary" onMouseDown={() => setEditableInstitute(institute.instituteId)}>עדכן</Button>
+                      )}
+                   {' '}
+                   <Button variant="danger" onClick={() => deleteInstitute(institute.instituteId)}>
+                     מחק
+                   </Button>{' '}
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {Array.isArray(institutes) &&
-                institutes.map((institute) => (
-                  <tr key={institute.instituteId}>
-                    <td>{institute.instituteName}</td>
-                    <td>{institute.instituteType}</td>
-                    <td>{institute.rateCode}</td>
-                    <td>{getRateByCode(institute.rateCode)}</td>
-                    <td>
-                      <Button variant="secondary" onClick={() => console.log('Update clicked')}>
-                        עדכן
-                      </Button>{' '}
-                      <Button variant="danger" onClick={() => deleteInstitute(institute.instituteId)}>
-                        מחק
-                      </Button>{' '}
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </Table>
-        </div>
+            ))}
+          </tbody>
+        </Table>
       </div>
-
+    </div>
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>הוספת מוסד</Modal.Title>
