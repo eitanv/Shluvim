@@ -178,8 +178,8 @@ function ManageInstructors() {
     <div className="centered-frame">
       <div className="frame-content">
         <div>
-          <h2>ניהול מדריכים</h2>
-          <Button onClick={handleShow}>Add Instructor</Button>
+          <h2>Manage Instructors</h2>
+          <Button variant="dark" onClick={handleShow}>Add Instructor</Button>
           <Table striped bordered hover>
             <thead>
               <tr>
@@ -241,12 +241,12 @@ function ManageInstructors() {
                   </td>
                   <td>
                     {editableInstructor === instructor.instructorId ? (
-                      <Button onMouseUp={() => updateInstructor(instructor.instructorId)}>Update</Button>
+                      <Button variant="secondary" onMouseUp={() => updateInstructor(instructor.instructorId)}>Update</Button>
                     ) : (
-                      <Button onMouseDown={() => setEditableInstructor(instructor.instructorId)}>Update</Button>
-                    )}
-                    <Button onClick={() => deleteInstructor(instructor.instructorId)}>Delete</Button>
-                    <Button onClick={() => handleReportShow(instructor.instructorId)}>Log Hours</Button>
+                      <Button variant="secondary" onMouseDown={() => setEditableInstructor(instructor.instructorId)}>Update</Button>
+                    )} {' '}
+                    <Button variant="danger" onClick={() => deleteInstructor(instructor.instructorId)}>Delete</Button> {' '}
+                    <Button variant="info" onClick={() => handleReportShow(instructor.instructorId)}>Log Hours</Button>
                   </td>
                 </tr>
               ))}

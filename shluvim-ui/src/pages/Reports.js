@@ -134,11 +134,11 @@ function Reports() {
             ))}
           </select>
           <input type="month" onChange={e => setMonth(e.target.value)} value={month} />
-          <button onClick={generateReport}>Generate Report</button>
+          <Button variant="dark" onClick={generateReport}>Generate Report</Button>
           <Table striped bordered hover>
             <thead>
               <tr>
-                <th>Name</th>
+                <th>Institute</th>
                 <th>Hours</th>
                 <th>Charge</th>
                 <th>Actions</th>
@@ -151,7 +151,7 @@ function Reports() {
                   <td>{report.totalHours}</td>
                   <td>{report.totalCharge}</td>
                   <td>
-                    <Button onClick={() => handleShowDetails(report, month)}>Details</Button>
+                    <Button variant="info" onClick={() => handleShowDetails(report, month)}>Details</Button>
                   </td>
                 </tr>
               ))}
