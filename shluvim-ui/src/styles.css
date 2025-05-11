@@ -14,3 +14,13 @@
   color: #000; /* Set the text color to white for better contrast */
   max-height: 100vh; /* Optional: limit the height of the content */
 }
+
+.align-button {
+  height: 28px;
+  vertical-align: top !important; /* Align with other elements */
+  font-size: 14px !important; /* Adjust the size as needed */
+  padding-bottom: 2px !important; /* Adjust padding for better alignment */
+  padding-top: 0px !important; /* Ensure no extra padding at the top */
+  margin-left: 1px;
+  margin-right: 1px;
+}

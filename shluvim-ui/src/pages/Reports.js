@@ -125,7 +125,7 @@ function Reports() {
         <div>
           <h2>דוחות</h2>
           {error && <p style={{ color: 'red' }}>{error}</p>}
-          <select onChange={e => setSelectedInstitute(e.target.value)} value={selectedInstitute}>
+          <select className="align-button" onChange={e => setSelectedInstitute(e.target.value)} value={selectedInstitute}>
             <option value="">All</option>
             {institutes.map(institute => (
               <option key={institute.instituteId} value={institute.instituteId}>
@@ -134,7 +134,7 @@ function Reports() {
             ))}
           </select>
           <input type="month" onChange={e => setMonth(e.target.value)} value={month} />
-          <Button variant="dark" onClick={generateReport}>Generate Report</Button>
+          <Button variant="dark" className="align-button" onClick={generateReport}>Generate Report</Button>
           <Table striped bordered hover>
             <thead>
               <tr>
