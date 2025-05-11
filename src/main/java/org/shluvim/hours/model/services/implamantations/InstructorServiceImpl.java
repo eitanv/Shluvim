@@ -14,6 +14,8 @@ import org.shluvim.hours.model.services.InstructorService;
 import org.shluvim.hours.model.services.RateServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -21,6 +23,7 @@ import java.util.List;
 @Service
 @AllArgsConstructor
 public class InstructorServiceImpl implements InstructorService {
+    private static final Logger logger = LoggerFactory.getLogger(InstructorServiceImpl.class);
 
     @Autowired
     InstructorReportRepository instructorReportRepository;
@@ -41,13 +44,13 @@ public class InstructorServiceImpl implements InstructorService {
     public Long logHours(InstructorHoursDTO newReport) {
 
         InstructorReport report = mapper.mapFromDto(newReport);
-        System.out.println("New report: " + report.toString());
+        logger.debug("New report: {}", report.toString());
 
         //Validate same params don't already exist
         List<InstructorReport> allReports = instructorReportRepository.findByReportMonth(newReport.getDate().split("-")[1]);
         for (InstructorReport existingReport : allReports) {
             if (isDuplicate(existingReport, report)) {
-                System.out.println("Report already exists with ID: " + existingReport.getReportId());
+                logger.error("Report already exists with ID: {}", existingReport.getReportId());
                 return 0L;
             }
         }
@@ -55,7 +58,7 @@ public class InstructorServiceImpl implements InstructorService {
         LocalTime from = report.getStartTime().toLocalTime();
         LocalTime to = report.getEndTime().toLocalTime();
         if (from.isAfter(to)) {
-            System.out.println("End Time cannot be before Start Time");
+            logger.error("End Time cannot be before Start Time");
             return 0L;
         }
 
@@ -64,7 +67,7 @@ public class InstructorServiceImpl implements InstructorService {
 
     @Override
     public boolean isDuplicate(InstructorReport existingReport, InstructorReport report) {
-        System.out.println("Checking existing: " + report.toString());
+        logger.debug("Checking existing: {}", report.toString());
 
         return existingReport.getInstructorId().equals(report.getInstructorId())
                 && existingReport.getInstituteId().equals(report.getInstituteId())

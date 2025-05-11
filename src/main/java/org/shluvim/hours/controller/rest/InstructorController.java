@@ -4,6 +4,9 @@ import org.shluvim.hours.controller.dto.InstructorHoursDTO;
 import org.shluvim.hours.controller.dto.InstructorRequestDTO;
 import org.shluvim.hours.model.Instructor;
 import org.shluvim.hours.model.services.InstructorService;
+import org.shluvim.hours.model.services.implamantations.InstructorServiceImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,13 +18,15 @@ import java.util.List;
 @RequestMapping("/instructors")
 public class InstructorController {
 
+    private static final Logger logger = LoggerFactory.getLogger(InstructorController.class);
+
     @Autowired
     InstructorService instructorService;
 
     @PostMapping("/report")
     ResponseEntity<Long> logHours(@RequestBody InstructorHoursDTO instructorHoursDTO) {
 
-        System.out.println("report= " + instructorHoursDTO.toString());
+        logger.debug("report= {}", instructorHoursDTO.toString());
 
         Long id = instructorService.logHours(instructorHoursDTO);
 
@@ -29,7 +34,7 @@ public class InstructorController {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
 
-        System.out.println("Successfully created the report: " + id);
+        logger.debug("Successfully created the report: {}", id);
         return new ResponseEntity<>(id, HttpStatus.OK);
     }
 

@@ -2,6 +2,7 @@ package org.shluvim.hours.model.services.implamantations;
 
 import org.shluvim.hours.controller.dto.MonthlyInstituteReportDTO;
 import org.shluvim.hours.controller.dto.MonthlyReportDTO;
+import org.shluvim.hours.controller.rest.InstructorController;
 import org.shluvim.hours.model.InstructorReport;
 import org.shluvim.hours.model.MonthlyInstituteReport;
 import org.shluvim.hours.model.repositories.ReportRepository;
@@ -9,6 +10,8 @@ import org.shluvim.hours.model.services.ChargesService;
 import org.shluvim.hours.model.services.InstituteService;
 import org.shluvim.hours.model.services.InstructorService;
 import org.shluvim.hours.model.services.ReportService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +24,7 @@ import java.util.Map;
 
 @Service
 public class ReportServiceImpl implements ReportService {
+    private static final Logger logger = LoggerFactory.getLogger(ReportServiceImpl.class);
 
     @Autowired
     InstructorService instructorService;
@@ -100,9 +104,9 @@ public class ReportServiceImpl implements ReportService {
             reportToSave.setTotalHours(result.getTotalHours());
             reportRepository.save(reportToSave);
         } catch (Exception e) {
-            System.out.println("Failed to save new report to DB");
+            logger.error("Failed to save new report to DB");
         }
-        System.out.println("Successfully save new report to DB");
+        logger.debug("Successfully save new report to DB");
         return result;
     }
 
