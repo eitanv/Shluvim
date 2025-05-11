@@ -5,6 +5,8 @@ import ManageInstitutes from './pages/ManageInstitutes';
 import Reports from './pages/Reports';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css'; // Make sure to import the CSS file
+import shluvimLogo from './assets/shluvim_logo.avif';
+
 
 
 function App() {
@@ -12,7 +14,9 @@ function App() {
     <Router>
       <div className="App">
         <header className="App-header">
-          <h1>שלובים</h1>
+          <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <img src={shluvimLogo} alt="Shluvim Logo" style={{ height: '60px' }} />
+          </Link>
         </header>
         <hr />
       <div className="centered-frame-main">
@@ -29,6 +33,16 @@ function App() {
         </Routes>
       </div>
     </div>
+    <div className="lower-frame-main">
+            <hr />
+              <a href="https://www.shluvim.org.il/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ marginLeft: '20px', textDecoration: 'none', color: 'blue' }}
+              >לאתר העמותה</a>
+            <p>EVOL Boutique Development House</p>
+            <p>כל הזכויות שמורות © 2025</p>
+      </div>
     </div>
     </Router>
   );
