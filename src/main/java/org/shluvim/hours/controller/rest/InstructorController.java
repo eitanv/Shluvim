@@ -45,7 +45,7 @@ public class InstructorController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     ResponseEntity<Void> updateInstructor(@PathVariable Long id, @RequestBody InstructorRequestDTO instructor) {
         boolean updated = instructorService.updateInstructor(id, instructor);
         if (updated) {
@@ -55,7 +55,7 @@ public class InstructorController {
         }
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     ResponseEntity<Void> deleteInstructor(@PathVariable Long id) {
         boolean deleted = instructorService.deleteInstructor(id);
         if (deleted) {

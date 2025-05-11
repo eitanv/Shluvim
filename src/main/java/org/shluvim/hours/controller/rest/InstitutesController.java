@@ -33,7 +33,7 @@ public class InstitutesController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     ResponseEntity<Void> updateInstitute(@PathVariable Long id, @RequestBody InstituteRequestDTO institute) {
         boolean updated = instituteService.updateInstitute(id, institute);
         if (updated) {
@@ -43,7 +43,7 @@ public class InstitutesController {
         }
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     ResponseEntity<Void> deleteInstructor(@PathVariable Long id) {
         boolean deleted = instituteService.deleteInstitute(id);
         if (deleted) {

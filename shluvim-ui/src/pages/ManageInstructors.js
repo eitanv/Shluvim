@@ -126,7 +126,7 @@ function ManageInstructors() {
   };
 
   const deleteInstructor = (id) => {
-    fetch(`${process.env.REACT_APP_API_BASE_URL}/instructors/delete/${id}`, {
+    fetch(`${process.env.REACT_APP_API_BASE_URL}/instructors/${id}`, {
       method: 'DELETE',
     })
       .then(response => {
@@ -141,7 +141,7 @@ function ManageInstructors() {
 
     const updateInstructor = (id) => {
       const instructorToUpdate = instructors.find(instructor => instructor.instructorId === id);
-      fetch(`${process.env.REACT_APP_API_BASE_URL}/instructors/update/${id}`, {
+      fetch(`${process.env.REACT_APP_API_BASE_URL}/instructors/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -183,7 +183,6 @@ function ManageInstructors() {
           <Table striped bordered hover>
             <thead>
               <tr>
-                <th>ID</th>
                 <th>Name</th>
                 <th>Rate Code</th>
                 <th>Rate</th>
@@ -194,7 +193,6 @@ function ManageInstructors() {
             <tbody>
               {instructors.map(instructor => (
                 <tr key={instructor.instructorId}>
-                  <td>{instructor.instructorId}</td>
                   <td>
                     {editableInstructor === instructor.instructorId ? (
                       <Form.Control
@@ -207,6 +205,18 @@ function ManageInstructors() {
                       instructor.instructorName
                     )}
                   </td>
+                    <td>
+                      {editableInstructor === instructor.instructorId ? (
+                        <Form.Control
+                          type="text"
+                          name="identityNumber"
+                          value={instructor.user.identityNumber}
+                          onChange={(e) => handleEditChange(e, instructor.instructorId)}
+                        />
+                      ) : (
+                        instructor.user.identityNumber
+                      )}
+                    </td>
                   <td>
                     {editableInstructor === instructor.instructorId ? (
                       <Form.Control
@@ -227,18 +237,6 @@ function ManageInstructors() {
                     )}
                   </td>
                   <td>{instructor.rate}</td>
-                  <td>
-                    {editableInstructor === instructor.instructorId ? (
-                      <Form.Control
-                        type="text"
-                        name="identityNumber"
-                        value={instructor.user.identityNumber}
-                        onChange={(e) => handleEditChange(e, instructor.instructorId)}
-                      />
-                    ) : (
-                      instructor.user.identityNumber
-                    )}
-                  </td>
                   <td>
                     {editableInstructor === instructor.instructorId ? (
                       <Button variant="secondary" onMouseUp={() => updateInstructor(instructor.instructorId)}>Update</Button>

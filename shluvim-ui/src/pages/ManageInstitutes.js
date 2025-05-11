@@ -1,4 +1,4 @@
-import React, { useState, useEffect , useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Table, Button, Form, Modal } from 'react-bootstrap';
 import '../styles.css';
 
@@ -10,45 +10,47 @@ function ManageInstitutes() {
     instituteName: '',
     rate: '',
     instituteType: '',
-    rateCode: '' });
+    rateCode: '',
+  });
+  const [selectedRate, setSelectedRate] = useState(null);
 
-    const [selectedRate, setSelectedRate] = useState(null);
-
-    useEffect(() => {
-      // Fetch institutes
+  const fetchInstitutes = useCallback(() => {
+    if (rates.length > 0) {
       fetch(`${process.env.REACT_APP_API_BASE_URL}/institutes/`)
-        .then(response => response.json())
-        .then(data => {
-          if (Array.isArray(data)) {
-            setInstitutes(data);
-          } else {
-            console.error('Expected an array but got:', data);
-            setInstitutes([]);
-          }
-        })
-        .catch(error => console.error('Error fetching institutes:', error));
+        .then((response) => response.json())
+        .then((data) => {
+          const institutesWithRates = data.map((institute) => {
+            const rate = rates.find((rate) => rate.rateCode === institute.rateCode);
+            return { ...institute, rate: rate ? rate.rate : '' };
+          });
+          setInstitutes(institutesWithRates);
+        });
+    }
+  }, [rates]);
 
-      // Fetch rates
-      fetch(`${process.env.REACT_APP_API_BASE_URL}/rates/`)
-        .then(response => response.json())
-        .then(data => setRates(data))
-        .catch(error => console.error('Error fetching rates:', error));
-    }, []);
+  useEffect(() => {
+    fetch(`${process.env.REACT_APP_API_BASE_URL}/rates/`)
+      .then((response) => response.json())
+      .then((data) => {
+        setRates(data);
+        fetchInstitutes();
+      })
+      .catch((error) => console.error('Error fetching rates:', error));
+  }, [fetchInstitutes]);
 
-    const getRateByCode = (rateCode) => {
-      const rate = rates.find(rate => rate.rateCode === rateCode);
-      return rate ? rate.rate : 'N/A'; // Return 'N/A' if no matching rate is found
-    };
+  const getRateByCode = (rateCode) => {
+    const rate = rates.find((rate) => rate.rateCode === rateCode);
+    return rate ? rate.rate : 'N/A';
+  };
 
-const handleChange = (e) => {
-  const { name, value } = e.target;
-  setNewInstitute((prevState) => ({ ...prevState, [name]: value }));
-
-  if (name === 'rateCode') {
-    const rate = rates.find((rate) => rate.rateCode === value); // Match rateCode
-    setNewInstitute((prevState) => ({ ...prevState, rate: rate ? rate.rate : '' }));
-  }
-};
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setNewInstitute((prevState) => ({ ...prevState, [name]: value }));
+    if (name === 'rateCode') {
+      const rate = rates.find((rate) => rate.rateCode === value);
+      setNewInstitute((prevState) => ({ ...prevState, rate: rate ? rate.rate : '' }));
+    }
+  };
 
   const handleShow = () => setShowModal(true);
   const handleClose = () => {
@@ -59,22 +61,30 @@ const handleChange = (e) => {
   const addInstitute = () => {
     fetch(`${process.env.REACT_APP_API_BASE_URL}/institutes/addInstitute`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newInstitute),
     })
-      .then(response => {
+      .then((response) => {
         if (response.ok) {
-          fetch(`${process.env.REACT_APP_API_BASE_URL}/institutes/`)
-            .then(response => response.json())
-            .then(data => setInstitutes(data));
+          fetchInstitutes();
           handleClose();
         } else {
           throw new Error('Failed to add institute');
         }
       })
-      .catch(error => console.error('Error adding institute:', error));
+      .catch((error) => console.error('Error adding institute:', error));
+  };
+
+  const deleteInstitute = (id) => {
+    fetch(`${process.env.REACT_APP_API_BASE_URL}/institutes/${id}`, { method: 'DELETE' })
+      .then((response) => {
+        if (response.ok) {
+          fetchInstitutes();
+        } else {
+          throw new Error('Network response was not ok');
+        }
+      })
+      .catch((error) => console.error('There was a problem with the fetch operation:', error));
   };
 
   return (
@@ -82,7 +92,9 @@ const handleChange = (e) => {
       <div className="frame-content">
         <div>
           <h2>ניהול מוסדות</h2>
-          <Button variant="dark" onClick={handleShow}>הוספת מוסד</Button>
+          <Button variant="dark" onClick={handleShow}>
+            הוספת מוסד
+          </Button>
           <Table striped bordered hover>
             <thead>
               <tr>
@@ -94,18 +106,23 @@ const handleChange = (e) => {
               </tr>
             </thead>
             <tbody>
-              {Array.isArray(institutes) && institutes.map(institute => (
-                <tr key={institute.instituteId}>
-                  <td>{institute.instituteName}</td>
-                  <td>{institute.instituteType}</td>
-                  <td>{institute.rateCode}</td>
-                  <td>{getRateByCode(institute.rateCode)}</td>
-                  <td>
-                    <Button variant="secondary" onClick={() => console.log('Update clicked')}>עדכן</Button>{' '}
-                    <Button variant="danger" onClick={() => console.log('Delete clicked')}>מחק</Button>
-                  </td>
-                </tr>
-              ))}
+              {Array.isArray(institutes) &&
+                institutes.map((institute) => (
+                  <tr key={institute.instituteId}>
+                    <td>{institute.instituteName}</td>
+                    <td>{institute.instituteType}</td>
+                    <td>{institute.rateCode}</td>
+                    <td>{getRateByCode(institute.rateCode)}</td>
+                    <td>
+                      <Button variant="secondary" onClick={() => console.log('Update clicked')}>
+                        עדכן
+                      </Button>{' '}
+                      <Button variant="danger" onClick={() => deleteInstitute(institute.instituteId)}>
+                        מחק
+                      </Button>{' '}
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </Table>
         </div>
@@ -144,7 +161,7 @@ const handleChange = (e) => {
                 onChange={handleChange}
               >
                 <option value="">Select Rate Code</option>
-                {rates.map(rate => (
+                {rates.map((rate) => (
                   <option key={rate.rateCode} value={rate.rateCode}>
                     {rate.rateCode}
                   </option>
@@ -153,12 +170,7 @@ const handleChange = (e) => {
             </Form.Group>
             <Form.Group controlId="formRate">
               <Form.Label>Rate</Form.Label>
-              <Form.Control
-                type="text"
-                name="rate"
-                value={newInstitute.rate}
-                readOnly
-              />
+              <Form.Control type="text" name="rate" value={newInstitute.rate} readOnly />
             </Form.Group>
           </Form>
         </Modal.Body>
